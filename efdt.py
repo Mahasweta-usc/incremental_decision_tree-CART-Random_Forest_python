@@ -444,4 +444,4 @@ def test_run(train,train_true,test):
 
 
 if __name__ == "__main__":
-    test_run(train, train_true,test)
+    predictions = test_run(train, train_true,test)
