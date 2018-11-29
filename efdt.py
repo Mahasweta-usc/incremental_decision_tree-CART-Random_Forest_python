@@ -412,39 +412,15 @@ class Efdt:
             self.print_tree(node.right_child)
 
 
-def test_run():
+def test_run(train,train_true,test):
     start_time = time.time()
     # bank.csv whole data size: 4521 # skiprows=1, nrows=n
-    df = pd.read_csv('./dataset/bank.csv', header=0, sep=';')
-    # df = pd.read_csv('./dataset/default_of_credit_card_clients.csv', skiprows=1, header=0)
-    # df = df.drop(df.columns[0], axis=1)
-    df = df.sample(frac=1).reset_index(drop=True)  # shuffle data rows
-    title = list(df.columns.values)
+    title = list(train.columns.values)
     features = title[:-1]
-    rows = df.shape[0]
+    rows = train.shape[0]
 
-    ''' change month string to int '''
-    def month_str_to_int(df1):
-        import calendar
-        d = dict((v.lower(),k) for k,v in enumerate(calendar.month_abbr))
-        df1.month = df1.month.map(d)
-    month_str_to_int(df)
 
-    # convert df to data examples
-    training_size = 4000
-    array = df.head(training_size).values
-    set1 = array[:1000, :]
-    set2 = array[1000:2000, :]
-    set3 = array[2000:, :]
-
-    # to simulate continuous training, modify the tree for each training set
-    examples = [set1, set2, set3]
-
-    # test set is different from training set
-    n_test = 500
-    test_set = df.tail(n_test).values
-    x_test = test_set[:, :-1]
-    y_test = test_set[:, -1]
+ 
 
     # Heoffding bound (epsilon) parameter delta: with 1 - delta probability
     # the true mean is at least r_bar - epsilon
@@ -452,22 +428,20 @@ def test_run():
     # feature_values: unique values in every feature
     # tie breaking: when difference is so small, split when diff_g < epsilon < tau
     tree = Efdt(features, delta=0.01, nmin=100, tau=0.5)
-    print('Total data size: ', rows)
-    print('Training size: ', training_size)
-    print('Test set size: ', n_test)
-    n = 0
-    for training_set in examples:
-        n += len(training_set)
-        x_train = training_set[:, :-1]
-        y_train = training_set[:, -1]
-        for x, y in zip(x_train, y_train):
-            tree.update(x, y)
-        y_pred = tree.predict(x_test)
-        print('Training set:', n, end=', ')
-        print('ACCURACY: %.4f' % accuracy_score(y_test, y_pred))
-
+#     print('Total data size: ', rows)
+#     print('Training size: ', training_size)
+#     print('Test set size: ', n_test)
+#     n = 0
+#     for training_set in examples:
+      for x, y in zip(train,train_true):
+          tree.update(x, y)
+      y_pred = tree.predict(x_test)
+#         print('Training set:', n, end=', ')
+#         print('ACCURACY: %.4f' % accuracy_score(y_test, y_pred))
+      return y_pred
+        
     print("--- Running time: %.6f seconds ---" % (time.time() - start_time))
 
 
 if __name__ == "__main__":
-    test_run()
+    test_run(train, train_true,test)
